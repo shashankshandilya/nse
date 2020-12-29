@@ -49,13 +49,14 @@ class Nse:
     def fetch_data_from_nse(self):
         stock_data = {}
         for stock in self.stock_list:
-            stock_data['block_deals'] = json.loads( self.get_block_deals(stock) )
-            stock_data['corporate_info'] = json.loads( self.get_corporate_info(stock ) )
+            print(" Fetching data for ", stock, ".....")
+            stock_data[stock] = {}
+            stock_data[stock]['block_deals'] = json.loads( self.get_block_deals(stock) )
+            stock_data[stock]['corporate_info'] = json.loads( self.get_corporate_info(stock ) )
         self.pp(stock_data)
 
 if __name__ == '__main__':
     args = sys.argv
-    print( args[1:] )
     nse_object = Nse(args[1:])
     nse_object.fetch_data_from_nse()
     # nse_object.get_corporate_info()
