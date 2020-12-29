@@ -1,11 +1,13 @@
 
 import requests
 import json
+import sys
 
 class Nse:
-    def __init__(self):
+    def __init__(self, stock_list):
         print("NSE is initialising ....")
         self.session = self.get_session()
+        self.stock_list = stock_list
 
     def session_call(self, url):
         return self.session.get(url, headers=self.headers(), data= {})
@@ -18,16 +20,17 @@ class Nse:
         return session
 
     def pp(self, response):
-        print(json.dumps(json.loads(response.text), indent=4, sort_keys=True))
-    def get_corporate_info(self):
-        url = 'https://www.nseindia.com/api/quote-equity?symbol=YESBANK&section=corp_info'
-        response = self.session_call(url)
-        self.pp(response)
+        print(json.dumps(response, indent=4, sort_keys=True))
 
-    def get_block_deals(self):
-        url = 'https://www.nseindia.com/api/quote-equity?symbol=YESBANK&section=trade_info'
+    def get_corporate_info(self, stock_symbol):
+        url = f'https://www.nseindia.com/api/quote-equity?symbol={stock_symbol}&section=corp_info'
+        response = self.session_call(url)
+        return response.text
+
+    def get_block_deals(self, stock_symbol):
+        url = f'https://www.nseindia.com/api/quote-equity?symbol={stock_symbol}&section=trade_info'
         response = self.session_call( url )
-        self.pp(response)
+        return response.text
 
     def headers(self):
         """
@@ -42,6 +45,18 @@ class Nse:
             'Upgrade-Insecure-Requests': '1',
             'Cache-Control': 'max-age=0'
         }
-nse_object = Nse()
-nse_object.get_corporate_info()
-nse_object.get_block_deals()
+    
+    def fetch_data_from_nse(self):
+        stock_data = {}
+        for stock in self.stock_list:
+            stock_data['block_deals'] = json.loads( self.get_block_deals(stock) )
+            stock_data['corporate_info'] = json.loads( self.get_corporate_info(stock ) )
+        self.pp(stock_data)
+
+if __name__ == '__main__':
+    args = sys.argv
+    print( args[1:] )
+    nse_object = Nse(args[1:])
+    nse_object.fetch_data_from_nse()
+    # nse_object.get_corporate_info()
+    # nse_object.get_block_deals()
